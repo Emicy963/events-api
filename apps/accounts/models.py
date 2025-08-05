@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.gis.db import models as gis_models
 from django.db import models
 from apps.cores.models import TimestampedModel, StatusChoices
 
@@ -21,3 +22,20 @@ class User(AbstractUser, TimestampedModel):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'phone']
+
+class UserProfile(TimestampedModel):
+    """Perfil estendido do usuário"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    full_name = models.CharField(max_length=255)
+    bio = models.TextField(blank=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    birth_day = models.DateField(blank=True, null=True)
+    #Localização (Angola)
+    province = models.CharField(max_length=50, blank=True)
+    municipality = models.CharField(max_length=50, blank=True)
+    address = models.TextField(blank=True)
+    location = gis_models.PointField(blank=True, null=True) # Coordenadas GPS
+    # Configurações
+    sms_notifications = models.BooleanField(default=True)
+    whatsapp_notifications = models.BooleanField(default=True)
+    email_notifications = models.BooleanField(default=True)
