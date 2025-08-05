@@ -39,3 +39,19 @@ class UserProfile(TimestampedModel):
     sms_notifications = models.BooleanField(default=True)
     whatsapp_notifications = models.BooleanField(default=True)
     email_notifications = models.BooleanField(default=True)
+
+class OrganizerProfile(TimestampedModel):
+    """Perfil específico para organizadores"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='organizer_profile')
+    company_name = models.CharField(max_length=255)
+    tax_id = models.CharField(max_length=50, unique=True) # NIF em Angola
+    company_logo = models.ImageField(upload_to='company_logos/', blank=True, null=True)
+    website = models.URLField(blank=True)
+    description = models.TextField(blank=True)
+    # Verificação
+    is_verified = models.BooleanField(default=False)
+    verification_documents = models.JSONField(default=dict)
+    # Comissões
+    comission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=5.00)
+    total_events = models.PositiveIntegerField(default=0)
+    total_sales = models.DecimalField(max_digits=1, decimal_places=2, default=0)
