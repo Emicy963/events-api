@@ -11,3 +11,9 @@ class TimestampedModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
         abstract = True
+
+class StatusChoices(models.TextChoices):
+    ACTIVE = 'active', 'Ativo'
+    INACTIVE = 'inactive', 'Inativo'
+    PENDING = 'pending', 'Pendente'
+    CANCELLED = 'cancelled', 'Cancelado'
