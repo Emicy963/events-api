@@ -55,3 +55,36 @@ class OrganizerProfileSerializer(serializers.ModelSerializer):
             'comission_rate', 'total_events', 'total_sales'
         ]
         read_only_fields = ['user', 'is_verified', 'verification_documents', 'comission_rate', 'total_events', 'total_sales']
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerialier()
+    organizer_profile = OrganizerProfileSerializer(required=False)
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'phone', 'user_type', 'profile', 'organizer_profile']
+        read_only_fields = ['id', 'email', 'user_type']
+    
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+        organizer_profile_data = validated_data.pop('organizer_profile', None)
+
+        # Atualiza dados do usuário
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Atualiza perfil do usuário
+        if profile_data:
+            profile = instance.profile
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
+
+        # Atualiza perfil de organizador (se aplicável)
+        if organizer_profile_data and hasattr(instance, 'organizer_profile'):
+            organizer_profile = instance.organizer_profile
+            for attr, value in organizer_profile_data.items():
+                setattr(organizer_profile, attr, value)
+            organizer_profile.save()
+        return instance
