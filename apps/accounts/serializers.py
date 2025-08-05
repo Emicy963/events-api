@@ -39,4 +39,9 @@ class LoginSerializer(serializers.Serializer):
 class UserProfileSerialier(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = 'all'
+        fields = [
+            'full_name', 'bio', 'avatar', 'birth_day',
+            'province', 'municipality', 'address', 'location',
+            'sms_notifications', 'whatsapp_notifications', 'email_notifications'
+        ]
+        read_only_fields = ['user']
