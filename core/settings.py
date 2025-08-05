@@ -20,7 +20,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[]).split(',')
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -28,6 +28,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+THIRD_PARTY_APPS = [
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+    'django_filters',
+    'drf_spectacular',  # OpenAPI docs
+    'django_celery_beat',
+    'django_celery_results',
+]
+
+LOCAL_APPS = [
+    'apps.core',
+]
+
+INSTALLED_APPPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
