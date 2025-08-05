@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from apps.accounts.models import User, UserProfile
+from apps.accounts.models import User, UserProfile, OrganizerProfile
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
@@ -45,3 +45,13 @@ class UserProfileSerialier(serializers.ModelSerializer):
             'sms_notifications', 'whatsapp_notifications', 'email_notifications'
         ]
         read_only_fields = ['user']
+
+class OrganizerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizerProfile
+        fields = [
+            'company_name', 'tax_id', 'company_logo', 'website', 'description',
+            'is_verified', 'verification_documents',
+            'comission_rate', 'total_events', 'total_sales'
+        ]
+        read_only_fields = ['user', 'is_verified', 'verification_documents', 'comission_rate', 'total_events', 'total_sales']
