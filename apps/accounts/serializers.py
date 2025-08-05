@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from apps.accounts.models import User
+from apps.accounts.models import User, UserProfile
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
@@ -35,3 +35,8 @@ class LoginSerializer(serializers.Serializer):
                 raise serializers.ValidationError('User account is disabled')
             attrs['user'] = user
         return attrs
+
+class UserProfileSerialier(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = 'all'
