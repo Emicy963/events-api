@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
-from django.contrib.gis.db import models as gis_models
+# from django.contrib.gis.db import models as gis_models
 from django.db import models
 from apps.cores.models import TimestampedModel, StatusChoices
 
@@ -34,7 +34,8 @@ class UserProfile(TimestampedModel):
     province = models.CharField(max_length=50, blank=True)
     municipality = models.CharField(max_length=50, blank=True)
     address = models.TextField(blank=True)
-    location = gis_models.PointField(blank=True, null=True) # Coordenadas GPS
+    # location = gis_models.PointField(blank=True, null=True) # Coordenadas GPS
+    location = models.CharField(max_length=255, blank=True, null=True)
     # Configurações
     sms_notifications = models.BooleanField(default=True)
     whatsapp_notifications = models.BooleanField(default=True)
@@ -54,4 +55,4 @@ class OrganizerProfile(TimestampedModel):
     # Comissões
     comission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=5.00)
     total_events = models.PositiveIntegerField(default=0)
-    total_sales = models.DecimalField(max_digits=1, decimal_places=2, default=0)
+    total_sales = models.DecimalField(max_digits=12, decimal_places=2, default=0)
