@@ -69,3 +69,17 @@ class Event(TimestampedModel):
         decimal_places=2,
         default=0
     )
+
+class EventTeamMember(TimestampedModel):
+    """Equipe do evento"""
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="team",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    role = models.CharField(max_length=50) # Admin, Moderator, Validator
+    permissions = models.JSONField(default=dict)
