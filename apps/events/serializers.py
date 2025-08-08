@@ -20,3 +20,13 @@ class EventSerializer(serializers.ModelSerializer):
             "tickets_sold",
             "revenue",
         ]
+
+class EventCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        exclude = [
+            "organizer",
+            "views_count",
+            "tickets_sold",
+            "revenue",
+        ]
