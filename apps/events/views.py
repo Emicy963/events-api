@@ -2,6 +2,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Event
 from .serializers import EventCreateSerializer, EventSerializer
@@ -68,3 +69,28 @@ class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
         Event.objects.filter(pk=instance.pk).update(views_count=instance.views_count + 1)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+@api_view(["GET"])
+def events_by_location(request):
+    """Eventos por província/município"""
+    province = request.query_params.get("province")
+    municipality = request.query_params.get("municipality")
+    queryset = Event.objects.filter(status="active")
+
+    if province:
+        queryset = queryset.filter(province__iexact=province)
+    if municipality:
+        queryset = queryset.filter(municipality__iexact=municipality)
+
+    # Estatísticas por localização
+    stats = {
+        "total_events": queryset.count(),
+        "provinces": list(queryset.values_list("province", flat=True).distinct()),
+        "municipalities": list(queryset.values_list("municipality", flat=True).distinct()),
+    }
+
+    serializer = EventSerializer(queryset[:20], many=True)
+    return Response({
+        "status": stats,
+        "events": serializer.data
+    })
