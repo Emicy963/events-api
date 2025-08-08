@@ -2,6 +2,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters
+from rest_framework.response import Response
 from .models import Event
 from .serializers import EventCreateSerializer, EventSerializer
 
@@ -54,3 +55,16 @@ class EventListCreateView(generics.ListCreateAPIView):
             queryset = queryset.filter(start_datetime__lte=date_to)
         
         return queryset
+
+class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Detalhes, atualização e remoção de eventos"""
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    lookup_field = "slug"
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # Increment views
+        Event.objects.filter(pk=instance.pk).update(views_count=instance.views_count + 1)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
