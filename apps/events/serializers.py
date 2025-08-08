@@ -7,10 +7,14 @@ class EventCategorySerializer(serializers.ModelSerializer):
         models = EventCategory
         fields = "all"
 
+
 class EventSerializer(serializers.ModelSerializer):
     category = EventCategorySerializer(read_only=True)
-    organizer_name = serializers.CharField(source="organizer.get_full_name", read_only=True)
+    organizer_name = serializers.CharField(
+        source="organizer.get_full_name", read_only=True
+    )
     tickets_available = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Event
         fields = "__all__"
@@ -20,6 +24,7 @@ class EventSerializer(serializers.ModelSerializer):
             "tickets_sold",
             "revenue",
         ]
+
 
 class EventCreateSerializer(serializers.ModelSerializer):
     class Meta:

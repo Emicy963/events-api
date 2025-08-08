@@ -7,9 +7,13 @@ from rest_framework.response import Response
 from .models import Event
 from .serializers import EventCreateSerializer, EventSerializer
 
+
 class EventListCreateView(generics.ListCreateAPIView):
     """Lista e criação de eventos"""
-    queryset = Event.objects.filter(status="active").select_related("organizer", "category")
+
+    queryset = Event.objects.filter(status="active").select_related(
+        "organizer", "category"
+    )
     serializer_class = EventSerializer
     filter_backends = [
         DjangoFilterBackend,
@@ -29,7 +33,7 @@ class EventListCreateView(generics.ListCreateAPIView):
         if self.request.method == "POST":
             return EventCreateSerializer
         return EventSerializer
-    
+
     def perform_create(self, serializer):
         serializer.save(organizer=self.request.user)
 
@@ -37,15 +41,17 @@ class EventListCreateView(generics.ListCreateAPIView):
         queryset = super().get_queryset()
 
         # Filtro por proximidade (GPS)
-        lat = self.request.query_params.get('lat')
-        lng = self.request.query_params.get('lng')
-        radius = self.request.query_params.get('radius', 50)  # km
+        lat = self.request.query_params.get("lat")
+        lng = self.request.query_params.get("lng")
+        radius = self.request.query_params.get("radius", 50)  # km
         if lat and lng:
             point = Point(float(lng), float(lat), srid=4326)
-            queryset = queryset.filter(
-	            location__distance_lte=(point, Distance(km=radius))
-	        ).distance(point).order_by('distance')
-        
+            queryset = (
+                queryset.filter(location__distance_lte=(point, Distance(km=radius)))
+                .distance(point)
+                .order_by("distance")
+            )
+
         # Filtro por data
         date_from = self.reques.query_params.get("date_from")
         date_to = self.request.query_params.get("date_to")
@@ -54,11 +60,13 @@ class EventListCreateView(generics.ListCreateAPIView):
             queryset = queryset.filter(start_datetime__gte=date_from)
         if date_to:
             queryset = queryset.filter(start_datetime__lte=date_to)
-        
+
         return queryset
+
 
 class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Detalhes, atualização e remoção de eventos"""
+
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     lookup_field = "slug"
@@ -66,9 +74,12 @@ class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         # Increment views
-        Event.objects.filter(pk=instance.pk).update(views_count=instance.views_count + 1)
+        Event.objects.filter(pk=instance.pk).update(
+            views_count=instance.views_count + 1
+        )
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
 
 @api_view(["GET"])
 def events_by_location(request):
@@ -86,11 +97,10 @@ def events_by_location(request):
     stats = {
         "total_events": queryset.count(),
         "provinces": list(queryset.values_list("province", flat=True).distinct()),
-        "municipalities": list(queryset.values_list("municipality", flat=True).distinct()),
+        "municipalities": list(
+            queryset.values_list("municipality", flat=True).distinct()
+        ),
     }
 
     serializer = EventSerializer(queryset[:20], many=True)
-    return Response({
-        "status": stats,
-        "events": serializer.data
-    })
+    return Response({"status": stats, "events": serializer.data})
