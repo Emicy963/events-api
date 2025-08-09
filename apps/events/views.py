@@ -1,5 +1,5 @@
-from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import Distance
+# from django.contrib.gis.geos import Point
+# from django.contrib.gis.measure import Distance
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters
 from rest_framework.decorators import api_view
@@ -41,19 +41,19 @@ class EventListCreateView(generics.ListCreateAPIView):
         queryset = super().get_queryset()
 
         # Filtro por proximidade (GPS)
-        lat = self.request.query_params.get("lat")
-        lng = self.request.query_params.get("lng")
-        radius = self.request.query_params.get("radius", 50)  # km
-        if lat and lng:
-            point = Point(float(lng), float(lat), srid=4326)
-            queryset = (
-                queryset.filter(location__distance_lte=(point, Distance(km=radius)))
-                .distance(point)
-                .order_by("distance")
-            )
+        # lat = self.request.query_params.get("lat")
+        # lng = self.request.query_params.get("lng")
+        # radius = self.request.query_params.get("radius", 50)  # km
+        # if lat and lng:
+        #     point = Point(float(lng), float(lat), srid=4326)
+        #     queryset = (
+        #         queryset.filter(location__distance_lte=(point, Distance(km=radius)))
+        #         .distance(point)
+        #         .order_by("distance")
+        #     )
 
         # Filtro por data
-        date_from = self.reques.query_params.get("date_from")
+        date_from = self.request.query_params.get("date_from")
         date_to = self.request.query_params.get("date_to")
 
         if date_from:

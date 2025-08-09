@@ -4,8 +4,8 @@ from .models import Event, EventCategory
 
 class EventCategorySerializer(serializers.ModelSerializer):
     class Meta:
-        models = EventCategory
-        fields = "all"
+        model = EventCategory
+        fields = "__all__"
 
 
 class EventSerializer(serializers.ModelSerializer):
