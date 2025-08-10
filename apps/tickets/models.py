@@ -10,7 +10,7 @@ class TicketTypeChoices(models.TextChoices):
     PAID = "paid", "Pago"
     DONATAION = "donation", "Doação"
 
-class TickeType(TimestampedModel):
+class TicketType(TimestampedModel):
     """Tipos de ingresso"""
     event = models.ForeignKey(
         "events.Event",
