@@ -41,3 +41,11 @@ class TickeType(TimestampedModel):
     min_quantity_per_order = models.PositiveBigIntegerField(default=1)
     max_quantity_per_order = models.PositiveIntegerField(default=10)
     is_active = models.BooleanField(default=True)
+
+    @property
+    def quantity_available(self):
+        return self.quantity_total - self.quantity_sold
+    
+    @property
+    def is_sold_out(self):
+        return self.quantity_available <= 0
