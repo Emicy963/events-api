@@ -1,3 +1,6 @@
 from django.db import models
 
-# Create your models here.
+class TicketTypeChoices(models.TextChoices):
+    FREE = "free", "Gratuito"
+    PAID = "paid", "Pago"
+    DONATAION = "donation", "Doação"
