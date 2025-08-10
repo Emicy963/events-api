@@ -1,5 +1,8 @@
+import qrcode
 from django.db import models
 from django.conf import settings
+from django.core.files import File
+from io import BytesIO
 from apps.cores.models import TimestampedModel
 
 class TicketTypeChoices(models.TextChoices):
@@ -139,3 +142,18 @@ class Ticket(TimestampedModel):
         blank=True, null=True,
         related_name="validated_tickets"
     )
+
+    def generate_qr_code(self):
+        """Gera QR code para o ingresso"""
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(self.qr_data)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        filename = f"qr_{self.ticket_number}.png"
+        self.qr_code.save(filename, File(buffer), save=False)
+        buffer.close()
