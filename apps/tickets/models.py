@@ -103,3 +103,39 @@ class Order(TimestampedModel):
     payment_method = models.CharField(max_length=50, blank=True)
     payment_reference = models.CharField(max_length=100, blank=True)
     paid_at = models.DateTimeField(blank=True, null=True)
+
+class Ticket(TimestampedModel):
+    """Ingresso individual"""
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
+    ticket_type = models.ForeignKey(
+        TickeType, on_delete=models.CASCADE
+    )
+    
+    # Identificação única
+    ticket_number = models.CharField(max_length=20, unique=True)
+    qr_code = models.ImageField(upload_to="qr_code/", blank=True, null=True)
+    qr_data = models.TextField() # Dados criptogrfados
+
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("valid", "Válido"),
+            ("used", "Usado"),
+            ("expired", "Expirado"),
+            ("cancelled", "Cancelado"),
+        ], default="valid"
+    )
+
+    # Validação
+    used_at = models.DateTimeField(blank=True, null=True)
+    validated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True, null=True,
+        related_name="validated_tickets"
+    )
