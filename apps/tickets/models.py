@@ -115,7 +115,7 @@ class Ticket(TimestampedModel):
         related_name="tickets"
     )
     ticket_type = models.ForeignKey(
-        TickeType, on_delete=models.CASCADE
+        TicketType, on_delete=models.CASCADE
     )
     
     # Identificação única
