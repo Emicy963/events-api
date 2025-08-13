@@ -1,5 +1,5 @@
 from decimal import Decimal
-from apps.tickets.models import TicketType
+from apps.tickets.models import Order, TicketType
 
 
 class TicketService:
@@ -32,3 +32,20 @@ class TicketService:
                 "quantity": quantity,
                 "unit_price": ticket_type.price_aoa
             })
+
+            # Calcular taxas (5% da plataforma)
+            fees = subtotal * Decimal("0.05")
+            total = subtotal + fees
+
+            # Criar pedido
+            order = Order.objects.create(
+                buyer=buyer,
+                event_id=event_id,
+                order_number=TicketService.generate_order_number(),
+                subtotal_aoa=subtotal,
+                fees_aoa=fees,
+                total_aoa=total,
+                buyer_name=buyer_data["name"]
+                buyer_email=buyer_data["email"]
+                buyer_phone=buyer_data["phone"]
+            )
