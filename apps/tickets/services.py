@@ -1,5 +1,5 @@
 from decimal import Decimal
-from apps.tickets.models import Order, TicketType
+from apps.tickets.models import Order, Ticket, TicketType
 
 
 class TicketService:
@@ -49,3 +49,24 @@ class TicketService:
                 buyer_email=buyer_data["email"]
                 buyer_phone=buyer_data["phone"]
             )
+
+            # Criar tickets
+            for item in items_to_create:
+                ticket_type = item["ticket_type"]
+                quantity = item["quantity"]
+
+                for _ in range(quantity):
+                    ticket = Ticket.objects.create(
+                        order=order,
+                        ticket_type=ticket_type,
+                        ticket_number=TicketService.generate_ticket_number(),
+                        qr_data=QRCodeService.generate_qr_data(order, ticket_type)
+                    )
+                    # Gerar QR Code
+                    ticket.generate_qr_code()
+                    ticket.save()
+                
+                # Atualizar quantidade vendida
+                ticket_type.quantity_sold += quantity
+                ticket_type.save()
+        return order
