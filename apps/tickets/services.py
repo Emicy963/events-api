@@ -106,3 +106,25 @@ class QRCodeService:
         data["hash"] = hashlib.sha256(hash_data.encode()).hexdigest()
 
         return json.dumps(data)
+
+    @staticmethod
+    def verify_qr_data(qr_data):
+        """Verificar dados do QR Code"""
+        import hashlib
+        import json
+
+        try:
+            data = json.loads(qr_data)
+            provide_hash = data.pop("hash")
+
+            # Verificar hash
+            secret = settings.SECRET_KEY
+            hash_data = json.dumps(data, sort_keys=True) + secret
+            calculated_hash = hashlib.sha256(hash_data.encode()).hexdigest()
+
+            if provide_hash != calculated_hash:
+                return False, "Invalid QR Code"
+            
+            return True, data
+        except Exception as e:
+            return False, str(e)
