@@ -1,4 +1,6 @@
 from decimal import Decimal
+import uuid
+from django.utils import timezone
 from apps.tickets.models import Order, Ticket, TicketType
 
 
@@ -70,3 +72,8 @@ class TicketService:
                 ticket_type.quantity_sold += quantity
                 ticket_type.save()
         return order
+
+    @staticmethod
+    def generate_order_number():
+        """Gerar número único do pedido"""
+        return f"EAO{timezone.now().strftime("%Y%m%d")}{uuid.uuid4().hex[:10].upper}"
