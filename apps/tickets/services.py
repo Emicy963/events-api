@@ -76,4 +76,9 @@ class TicketService:
     @staticmethod
     def generate_order_number():
         """Gerar número único do pedido"""
-        return f"EAO{timezone.now().strftime("%Y%m%d")}{uuid.uuid4().hex[:10].upper}"
+        return f"EAO{timezone.now().strftime("%Y%m%d")}{uuid.uuid4().hex[:8].upper}"
+
+    @staticmethod
+    def generate_ticket_number():
+        """Gerar número único do ingresso"""
+        return f"T{timezone.now().strftime("%Y%m%d")}{uuid.uuid4().hex[:10].upper()}"
