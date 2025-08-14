@@ -3,9 +3,9 @@ from django.db import transaction
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import TicketType
+from .models import Ticket, TicketType
 from .services import TicketService
-from .serializers import TicketTypeSerializer, OrderCreateSerializer
+from .serializers import TicketSerializer, TicketTypeSerializer, OrderCreateSerializer
 
 class TicketTypeListView(generics.ListAPIView):
     """Lista tipos de ingresso de um evento"""
@@ -45,3 +45,13 @@ def create_order(request):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def my_tickets(request):
+    """Meus ingressos"""
+    tickets = Ticket.objects.filter(
+        order__buyer=request.user,
+        order__status="paid"
+    ).select_related("ticket_type", "ticket_type__event", "order")
+    serializer = TicketSerializer(tickets, many=True)
+    return Response(serializer.data)
