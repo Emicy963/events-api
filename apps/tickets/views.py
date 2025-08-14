@@ -1,7 +1,9 @@
 from django.utils import timezone
+from django.db import transaction
 from rest_framework import generics
+from rest_framework.decorators import api_view
 from .models import TicketType
-from .serializers import TicketTypeSerializer
+from .serializers import TicketTypeSerializer, OrderCreateSerializer
 
 class TicketTypeListView(generics.ListAPIView):
     """Lista tipos de ingresso de um evento"""
@@ -15,3 +17,12 @@ class TicketTypeListView(generics.ListAPIView):
             sale_start__lte=timezone.now(),
             sale_end_gte=timezone.now()
         )
+
+@api_view(["POST"])
+def create_order(request):
+    """Criar pedidos"""
+    serializer = OrderCreateSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            with transaction.atomic():
+                order = Ticke
