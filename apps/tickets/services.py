@@ -1,6 +1,7 @@
 from decimal import Decimal
 import uuid
 from django.utils import timezone
+from django.conf import settings
 from apps.tickets.models import Order, Ticket, TicketType
 
 
@@ -47,8 +48,8 @@ class TicketService:
                 subtotal_aoa=subtotal,
                 fees_aoa=fees,
                 total_aoa=total,
-                buyer_name=buyer_data["name"]
-                buyer_email=buyer_data["email"]
+                buyer_name=buyer_data["name"],
+                buyer_email=buyer_data["email"],
                 buyer_phone=buyer_data["phone"]
             )
 
@@ -82,3 +83,26 @@ class TicketService:
     def generate_ticket_number():
         """Gerar número único do ingresso"""
         return f"T{timezone.now().strftime("%Y%m%d")}{uuid.uuid4().hex[:10].upper()}"
+
+class QRCodeService:
+    """Serviço de QR Code"""
+
+    @staticmethod
+    def generate_qr_data(order, ticket_type):
+        """Gerar dados criptografados para QR Code"""
+        import hashlib
+        import json
+
+        data = {
+            "order_id": str(order.id),
+            "event_id": str(ticket_type.event.id),
+            "ticket_type_id": str(ticket_type.id),
+            "timestamp": timezone.now().isoformat(),
+        }
+
+        # Hash para segurança
+        secret = settings.SECRET_KEY
+        hash_data = json.dumps(data, sort_keys=True) + secret
+        data["hash"] = hashlib.sha256(hash_data.encode()).hexdigest()
+
+        return json.dumps(data)
