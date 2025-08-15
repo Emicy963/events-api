@@ -55,3 +55,32 @@ def my_tickets(request):
     ).select_related("ticket_type", "ticket_type__event", "order")
     serializer = TicketSerializer(tickets, many=True)
     return Response(serializer.data)
+
+@api_view(["POST"])
+def validate_ticket(request, ticket_id):
+    """Validar ingresso via QR Code (para organizadores)"""
+    try:
+        ticket = Ticket.objects.get(id=ticket_id)
+        # Verifixar se o usuário pode validar este ticket
+        if not request.user.organized_events.filter(id=ticket.ticket_type.event.id).exists():
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        if ticket.status == "used":
+            return Response({"error": "Ticket already used"}, status=status.HTTP_400_BAD_REQUEST)
+        if ticket.status != "valid":
+            return Response({"error": "Invalid ticket"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validar ticket
+        ticket.status = "used"
+        ticket.used_at = timezone.now()
+        ticket.validated_by = request.user
+        ticket.save()
+
+        return Response({
+            "sucess": True,
+            "ticket_number": ticket.ticket_number,
+            "holder_name": ticket.order.buyer_name,
+            "event_title": ticket.ticket_type.event.title,
+            "validated_at": ticket.used_at
+        })
+    except Ticket.DoesNotExist:
+        return Response({"error": "Ticket not found"}, status=status.HTTP_404_NOT_FOUND)
