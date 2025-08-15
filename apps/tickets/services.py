@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.conf import settings
 from apps.tickets.models import Order, Ticket, TicketType
 
+
 class TicketService:
     """Serviços relacionados a ingressos"""
 
@@ -21,19 +22,24 @@ class TicketService:
             # Verificar disponibilidade
             if ticket_type.quantity_available < quantity:
                 raise ValueError(f"Not enough tickets available for {ticket_type.name}")
-            
+
             # Verificar limites por pedido
-            if quantity < ticket_type.min_quantity_per_order or quantity > ticket_type.max_quantity_per_order:
+            if (
+                quantity < ticket_type.min_quantity_per_order
+                or quantity > ticket_type.max_quantity_per_order
+            ):
                 raise ValueError(f"Invalid quantity for {ticket_type.name}")
-            
+
             item_total = ticket_type.price_aoa * quantity
             subtotal += item_total
 
-            items_to_create.append({
-                "ticket_type": ticket_type,
-                "quantity": quantity,
-                "unit_price": ticket_type.price_aoa
-            })
+            items_to_create.append(
+                {
+                    "ticket_type": ticket_type,
+                    "quantity": quantity,
+                    "unit_price": ticket_type.price_aoa,
+                }
+            )
 
         # Calcular taxas (5% da plataforma) - FORA DO LOOP!
         fees = subtotal * Decimal("0.05")
@@ -49,7 +55,7 @@ class TicketService:
             total_aoa=total,
             buyer_name=buyer_data["name"],
             buyer_email=buyer_data["email"],
-            buyer_phone=buyer_data["phone"]
+            buyer_phone=buyer_data["phone"],
         )
 
         # Criar tickets
@@ -63,22 +69,22 @@ class TicketService:
                     order=order,
                     ticket_type=ticket_type,
                     ticket_number=TicketService.generate_ticket_number(),
-                    qr_data=QRCodeService.generate_qr_data(order, ticket_type)
+                    qr_data=QRCodeService.generate_qr_data(order, ticket_type),
                 )
                 tickets_to_create.append(ticket)
-            
+
             # Criar todos os tickets de uma vez (mais eficiente)
             Ticket.objects.bulk_create(tickets_to_create)
-            
+
             # Gerar QR Codes para cada ticket
             for ticket in tickets_to_create:
                 ticket.generate_qr_code()
                 ticket.save()
-            
+
             # Atualizar quantidade vendida
             ticket_type.quantity_sold += quantity
             ticket_type.save()
-        
+
         return order
 
     @staticmethod
@@ -135,7 +141,7 @@ class QRCodeService:
 
             if provided_hash != calculated_hash:
                 return False, "Invalid QR Code"
-            
+
             return True, data
         except Exception as e:
             return False, str(e)

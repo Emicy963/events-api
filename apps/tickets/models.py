@@ -5,35 +5,26 @@ from django.core.files import File
 from io import BytesIO
 from apps.cores.models import TimestampedModel
 
+
 class TicketTypeChoices(models.TextChoices):
     FREE = "free", "Gratuito"
     PAID = "paid", "Pago"
     DONATION = "donation", "Doação"
 
+
 class TicketType(TimestampedModel):
     """Tipos de ingresso"""
+
     event = models.ForeignKey(
-        "events.Event",
-        on_delete=models.CASCADE,
-        related_name="ticket_types"
+        "events.Event", on_delete=models.CASCADE, related_name="ticket_types"
     )
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
 
     # Preço
-    type = models.CharField(
-        max_length=20, choices=TicketTypeChoices.choices
-    )
-    price_aoa = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-    price_usd = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
+    type = models.CharField(max_length=20, choices=TicketTypeChoices.choices)
+    price_aoa = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    price_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     # Disponibilidade
     quantity_total = models.PositiveIntegerField()
@@ -49,7 +40,7 @@ class TicketType(TimestampedModel):
     @property
     def quantity_available(self):
         return self.quantity_total - self.quantity_sold
-    
+
     @property
     def is_sold_out(self):
         return self.quantity_available <= 0
@@ -57,35 +48,23 @@ class TicketType(TimestampedModel):
     def __str__(self):
         return f"{self.name} - {self.event.title}"
 
+
 class Order(TimestampedModel):
     """Pedido de compra"""
+
     buyer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="orders"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"
     )
     event = models.ForeignKey(
-        "events.Event",
-        on_delete=models.CASCADE,
-        related_name="orders"
+        "events.Event", on_delete=models.CASCADE, related_name="orders"
     )
     # Identificação
-    order_number = models.CharField(
-        max_length=50, unique=True
-    )
+    order_number = models.CharField(max_length=50, unique=True)
 
     # Valores
-    subtotal_aoa = models.DecimalField(
-        max_digits=10, decimal_places=2
-    )
-    fees_aoa = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-    total_aoa = models.DecimalField(
-        max_digits=20, decimal_places=2
-    )
+    subtotal_aoa = models.DecimalField(max_digits=10, decimal_places=2)
+    fees_aoa = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_aoa = models.DecimalField(max_digits=20, decimal_places=2)
     currency = models.CharField(max_length=3, default="AOA")
 
     # Status
@@ -97,7 +76,8 @@ class Order(TimestampedModel):
             ("failed", "Falhou"),
             ("cancelled", "Cancelado"),
             ("refunded", "Reembolso"),
-        ], default="pending"
+        ],
+        default="pending",
     )
 
     # Dados do comprador
@@ -113,21 +93,17 @@ class Order(TimestampedModel):
     def __str__(self):
         return f"Order {self.order_number} - {self.buyer.username}"
 
+
 class Ticket(TimestampedModel):
     """Ingresso individual"""
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="tickets"
-    )
-    ticket_type = models.ForeignKey(
-        TicketType, on_delete=models.CASCADE
-    )
-    
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE)
+
     # Identificação única
     ticket_number = models.CharField(max_length=20, unique=True)
     qr_code = models.ImageField(upload_to="qr_code/", blank=True, null=True)
-    qr_data = models.TextField() # Dados criptografados
+    qr_data = models.TextField()  # Dados criptografados
 
     # Status
     status = models.CharField(
@@ -137,7 +113,8 @@ class Ticket(TimestampedModel):
             ("used", "Usado"),
             ("expired", "Expirado"),
             ("cancelled", "Cancelado"),
-        ], default="valid"
+        ],
+        default="valid",
     )
 
     # Validação
@@ -145,8 +122,9 @@ class Ticket(TimestampedModel):
     validated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
-        blank=True, null=True,
-        related_name="validated_tickets"
+        blank=True,
+        null=True,
+        related_name="validated_tickets",
     )
 
     def generate_qr_code(self):
