@@ -8,7 +8,7 @@ from apps.cores.models import TimestampedModel
 class TicketTypeChoices(models.TextChoices):
     FREE = "free", "Gratuito"
     PAID = "paid", "Pago"
-    DONATAION = "donation", "Doação"
+    DONATION = "donation", "Doação"
 
 class TicketType(TimestampedModel):
     """Tipos de ingresso"""
@@ -42,7 +42,7 @@ class TicketType(TimestampedModel):
     sale_end = models.DateTimeField()
 
     # Configurações
-    min_quantity_per_order = models.PositiveBigIntegerField(default=1)
+    min_quantity_per_order = models.PositiveIntegerField(default=1)
     max_quantity_per_order = models.PositiveIntegerField(default=10)
     is_active = models.BooleanField(default=True)
 
@@ -53,6 +53,9 @@ class TicketType(TimestampedModel):
     @property
     def is_sold_out(self):
         return self.quantity_available <= 0
+
+    def __str__(self):
+        return f"{self.name} - {self.event.title}"
 
 class Order(TimestampedModel):
     """Pedido de compra"""
@@ -68,7 +71,7 @@ class Order(TimestampedModel):
     )
     # Identificação
     order_number = models.CharField(
-        max_length=2, unique=True
+        max_length=50, unique=True
     )
 
     # Valores
@@ -107,6 +110,9 @@ class Order(TimestampedModel):
     payment_reference = models.CharField(max_length=100, blank=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return f"Order {self.order_number} - {self.buyer.username}"
+
 class Ticket(TimestampedModel):
     """Ingresso individual"""
     order = models.ForeignKey(
@@ -121,7 +127,7 @@ class Ticket(TimestampedModel):
     # Identificação única
     ticket_number = models.CharField(max_length=20, unique=True)
     qr_code = models.ImageField(upload_to="qr_code/", blank=True, null=True)
-    qr_data = models.TextField() # Dados criptogrfados
+    qr_data = models.TextField() # Dados criptografados
 
     # Status
     status = models.CharField(
@@ -157,3 +163,6 @@ class Ticket(TimestampedModel):
         filename = f"qr_{self.ticket_number}.png"
         self.qr_code.save(filename, File(buffer), save=False)
         buffer.close()
+
+    def __str__(self):
+        return f"Ticket {self.ticket_number} - {self.ticket_type.name}"
